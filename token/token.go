@@ -5,6 +5,12 @@ type TokenType string
 type Token struct {
 	Type    TokenType
 	Literal string
+	Line    LinePoint
+}
+
+type LinePoint struct {
+	Row string
+	Col string
 }
 
 const (
