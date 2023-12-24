@@ -25,35 +25,51 @@ func (l *Lexer) readChar() {
 		l.ch = l.input[l.readPosition]
 	}
 
-	l.position = l.readPosition
-	l.readPosition += 1
+	l.position, l.readPosition = l.readPosition, l.readPosition+1
+}
+
+func (l *Lexer) skipWhitespace() {
+	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
+		l.readChar()
+	}
 }
 
 func (l *Lexer) NextToken() token.Token {
-	defer l.readChar()
+
+	l.skipWhitespace()
 
 	switch l.ch {
 	case '=':
+		defer l.readChar()
 		return newToken(token.ASSIGN, l.ch)
 	case ';':
+		defer l.readChar()
 		return newToken(token.SEMICOLON, l.ch)
 	case '(':
+		defer l.readChar()
 		return newToken(token.LPAREN, l.ch)
 	case ')':
+		defer l.readChar()
 		return newToken(token.RPAREN, l.ch)
 	case ',':
+		defer l.readChar()
 		return newToken(token.COMMA, l.ch)
 	case '+':
+		defer l.readChar()
 		return newToken(token.PLUS, l.ch)
 	case '{':
+		defer l.readChar()
 		return newToken(token.LBRACE, l.ch)
 	case '}':
+		defer l.readChar()
 		return newToken(token.RBRACE, l.ch)
 	case 0:
+		defer l.readChar()
 		return token.Token{Type: token.EOF, Literal: ""}
 	default:
 		if isLetter(l.ch) {
-			return token.Token{Literal: l.readIdentifier()}
+			var identifier string = l.readIdentifier()
+			return token.Token{Type: token.LookupIdent(identifier), Literal: identifier}
 		}
 	}
 
