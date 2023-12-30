@@ -34,7 +34,9 @@ func (l *Lexer) moveBack() {
 	l.position, l.readPosition = l.readPosition-2, l.readPosition-1
 	l.ch = l.input[l.readPosition]
 
-	if l.readPosition == 0 {
+	if l.readPosition <= 0 {
+		l.readPosition = 0
+		l.position = -1
 		l.ch = 0
 	}
 }
@@ -86,8 +88,7 @@ func (l *Lexer) NextToken() token.Token {
 		if l.peekChar() == '=' {
 			ch := l.ch
 			l.readChar()
-			literal := string(ch) + string(l.ch)
-			return token.Token{Type: token.EQ, Literal: literal}
+			return token.Token{Type: token.EQ, Literal: string(ch) + string(l.ch)}
 		}
 		return newToken(token.ASSIGN, l.ch)
 	case ';':
@@ -102,24 +103,21 @@ func (l *Lexer) NextToken() token.Token {
 		if l.peekChar() == '=' {
 			ch := l.ch
 			l.readChar()
-			literal := string(ch) + string(l.ch)
-			return token.Token{Type: token.INC_BY, Literal: literal}
+			return token.Token{Type: token.INC_BY, Literal: string(ch) + string(l.ch)}
 		}
 		return newToken(token.PLUS, l.ch)
 	case '-':
 		if l.peekChar() == '=' {
 			ch := l.ch
 			l.readChar()
-			literal := string(ch) + string(l.ch)
-			return token.Token{Type: token.DEC_BY, Literal: literal}
+			return token.Token{Type: token.DEC_BY, Literal: string(ch) + string(l.ch)}
 		}
 		return newToken(token.MINUS, l.ch)
 	case '!':
 		if l.peekChar() == '=' {
 			ch := l.ch
 			l.readChar()
-			literal := string(ch) + string(l.ch)
-			return token.Token{Type: token.NOT_EQ, Literal: literal}
+			return token.Token{Type: token.NOT_EQ, Literal: string(ch) + string(l.ch)}
 		}
 		return newToken(token.BANG, l.ch)
 	case '/':
@@ -130,16 +128,14 @@ func (l *Lexer) NextToken() token.Token {
 		if l.peekChar() == '=' {
 			ch := l.ch
 			l.readChar()
-			literal := string(ch) + string(l.ch)
-			return token.Token{Type: token.LTE, Literal: literal}
+			return token.Token{Type: token.LTE, Literal: string(ch) + string(l.ch)}
 		}
 		return newToken(token.LT, l.ch)
 	case '>':
 		if l.peekChar() == '=' {
 			ch := l.ch
 			l.readChar()
-			literal := string(ch) + string(l.ch)
-			return token.Token{Type: token.GTE, Literal: literal}
+			return token.Token{Type: token.GTE, Literal: string(ch) + string(l.ch)}
 		}
 		return newToken(token.GT, l.ch)
 	case '{':
