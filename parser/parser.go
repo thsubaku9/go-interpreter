@@ -11,6 +11,7 @@ type Parser struct {
 	l         *lexer.Lexer
 	curToken  token.Token
 	peekToken token.Token
+	errs      []error
 }
 
 func New(l *lexer.Lexer) Parser {
@@ -37,15 +38,16 @@ func (p *Parser) expectPeek(t token.TokenType) bool {
 		p.nextToken()
 		return true
 	} else {
+		// todo -> modify this to add errs
 		return false
 	}
 }
 
 func (p *Parser) ParseProgram() *ast.Program {
 	prog := &ast.Program{}
-	prog.Statements = make([]ast.Statement, 10)
+	prog.Statements = make([]ast.Statement, 0)
 
-	for p.curToken.Type != token.EOF {
+	for !p.curTokenIs(token.EOF) {
 		var stmt ast.Statement = p.parseStatement()
 		if stmt != nil {
 			prog.Statements = append(prog.Statements, stmt)
@@ -68,22 +70,24 @@ func (p *Parser) parseStatement() ast.Statement {
 func (p *Parser) parseLetStatement() *ast.LetStatement {
 
 	if !p.curTokenIs(token.LET) {
-		log.Panicf("Let statement starting token should be let, instead is %v", p.curToken)
+		log.Panicf("Let statement starting token should be let, instead is %v at %+v\n", p.curToken, p.curToken.Cursor)
 	}
 
 	stmt := &ast.LetStatement{Token: p.curToken}
 
 	if !p.expectPeek(token.IDENT) {
-		log.Printf("Let statement identifier expected")
-		return nil
+		log.Panicf("Let statement identifier expected at %+v\n", p.curToken.Cursor)
 	}
 
 	stmt.Name = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 
 	if !p.expectPeek(token.ASSIGN) {
-		log.Printf("Let statement assignment expected")
-		return nil
+		log.Panicf("Let statement assignment expected at %+v\n", p.curToken.Cursor)
 	}
 
-	return nil
+	// TODO: We're skipping the expressions until we encounter a semicolon
+	for !p.curTokenIs(token.SEMICOLON) {
+		p.nextToken()
+	}
+	return stmt
 }
