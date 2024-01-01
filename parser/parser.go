@@ -24,5 +24,29 @@ func (p *Parser) nextToken() {
 }
 
 func (p *Parser) ParseProgram() *ast.Program {
+	prog := &ast.Program{}
+	prog.Statements = make([]ast.Statement, 10)
+
+	for p.curToken.Type != token.EOF {
+		var stmt ast.Statement = p.parseStatement()
+		if stmt != nil {
+			prog.Statements = append(prog.Statements, stmt)
+		}
+		p.nextToken()
+	}
+
+	return prog
+}
+
+func (p *Parser) parseStatement() ast.Statement {
+	switch p.curToken.Type {
+	case token.LET:
+		return p.parseLetStatement()
+	default:
+		return nil
+	}
+}
+
+func (p *Parser) parseLetStatement() ast.Statement {
 	return nil
 }
