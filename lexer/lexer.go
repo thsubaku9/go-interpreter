@@ -14,33 +14,36 @@ type Lexer struct {
 }
 
 func New(input string) *Lexer {
-	l := &Lexer{input: input}
+	l := &Lexer{input: input, lineNum: 1, barNum: 1}
 	l.readChar()
 	return l
 }
 
-func (l *Lexer) IsFin() bool {
+func (l *Lexer) isFin() bool {
 	return l.readPosition >= len(l.input)
 }
 
 func (l *Lexer) readChar() {
-	if l.IsFin() {
+	if l.isFin() {
 		l.ch = 0
 	} else {
 		l.ch = l.input[l.readPosition]
+		l.barNum += 1
 	}
 	l.position, l.readPosition = l.readPosition, l.readPosition+1
 }
 
 func (l *Lexer) moveBack() {
 	l.position, l.readPosition = l.readPosition-2, l.readPosition-1
-	l.ch = l.input[l.readPosition]
+	l.barNum -= 1
 
 	if l.readPosition <= 0 {
 		l.readPosition = 0
 		l.position = -1
-		l.ch = 0
+		l.barNum = 1
 	}
+
+	l.ch = l.input[l.readPosition]
 }
 
 func (l *Lexer) peekChar() byte {
@@ -53,6 +56,11 @@ func (l *Lexer) peekChar() byte {
 
 func (l *Lexer) skipWhitespace() {
 	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
+		if l.ch == '\n' {
+			l.lineNum += 1
+			l.barNum = 1
+		}
+
 		l.readChar()
 	}
 }
@@ -92,75 +100,75 @@ func (l *Lexer) NextToken() token.Token {
 			l.readChar()
 			return token.Token{Type: token.EQ, Literal: string(ch) + string(l.ch)}
 		}
-		return newToken(token.ASSIGN, l.ch)
+		return newToken(token.ASSIGN, l.ch, l.lineNum, l.barNum)
 	case ';':
-		return newToken(token.SEMICOLON, l.ch)
+		return newToken(token.SEMICOLON, l.ch, l.lineNum, l.barNum)
 	case '(':
-		return newToken(token.LPAREN, l.ch)
+		return newToken(token.LPAREN, l.ch, l.lineNum, l.barNum)
 	case ')':
-		return newToken(token.RPAREN, l.ch)
+		return newToken(token.RPAREN, l.ch, l.lineNum, l.barNum)
 	case ',':
-		return newToken(token.COMMA, l.ch)
+		return newToken(token.COMMA, l.ch, l.lineNum, l.barNum)
 	case '+':
 		if l.peekChar() == '=' {
 			ch := l.ch
 			l.readChar()
-			return token.Token{Type: token.INC_BY, Literal: string(ch) + string(l.ch)}
+			return token.Token{Type: token.INC_BY, Literal: string(ch) + string(l.ch), Cursor: token.LineBar{Line: uint(l.lineNum), Bar: uint(l.barNum)}}
 		}
-		return newToken(token.PLUS, l.ch)
+		return newToken(token.PLUS, l.ch, l.lineNum, l.barNum)
 	case '-':
 		if l.peekChar() == '=' {
 			ch := l.ch
 			l.readChar()
-			return token.Token{Type: token.DEC_BY, Literal: string(ch) + string(l.ch)}
+			return token.Token{Type: token.DEC_BY, Literal: string(ch) + string(l.ch), Cursor: token.LineBar{Line: uint(l.lineNum), Bar: uint(l.barNum)}}
 		}
-		return newToken(token.MINUS, l.ch)
+		return newToken(token.MINUS, l.ch, l.lineNum, l.barNum)
 	case '!':
 		if l.peekChar() == '=' {
 			ch := l.ch
 			l.readChar()
-			return token.Token{Type: token.NOT_EQ, Literal: string(ch) + string(l.ch)}
+			return token.Token{Type: token.NOT_EQ, Literal: string(ch) + string(l.ch), Cursor: token.LineBar{Line: uint(l.lineNum), Bar: uint(l.barNum)}}
 		}
-		return newToken(token.BANG, l.ch)
+		return newToken(token.BANG, l.ch, l.lineNum, l.barNum)
 	case '/':
-		return newToken(token.SLASH, l.ch)
+		return newToken(token.SLASH, l.ch, l.lineNum, l.barNum)
 	case '*':
-		return newToken(token.ASTERISK, l.ch)
+		return newToken(token.ASTERISK, l.ch, l.lineNum, l.barNum)
 	case '<':
 		if l.peekChar() == '=' {
 			ch := l.ch
 			l.readChar()
-			return token.Token{Type: token.LTE, Literal: string(ch) + string(l.ch)}
+			return token.Token{Type: token.LTE, Literal: string(ch) + string(l.ch), Cursor: token.LineBar{Line: uint(l.lineNum), Bar: uint(l.barNum)}}
 		}
-		return newToken(token.LT, l.ch)
+		return newToken(token.LT, l.ch, l.lineNum, l.barNum)
 	case '>':
 		if l.peekChar() == '=' {
 			ch := l.ch
 			l.readChar()
-			return token.Token{Type: token.GTE, Literal: string(ch) + string(l.ch)}
+			return token.Token{Type: token.GTE, Literal: string(ch) + string(l.ch), Cursor: token.LineBar{Line: uint(l.lineNum), Bar: uint(l.barNum)}}
 		}
-		return newToken(token.GT, l.ch)
+		return newToken(token.GT, l.ch, l.lineNum, l.barNum)
 	case '{':
-		return newToken(token.LBRACE, l.ch)
+		return newToken(token.LBRACE, l.ch, l.lineNum, l.barNum)
 	case '}':
-		return newToken(token.RBRACE, l.ch)
+		return newToken(token.RBRACE, l.ch, l.lineNum, l.barNum)
 	case 0:
 		return token.Token{Type: token.EOF, Literal: ""}
 	default:
 		if isLetter(l.ch) {
 			var identifier string = l.readIdentifier()
 			l.moveBack()
-			return token.Token{Type: token.LookupIdent(identifier), Literal: identifier}
+			return token.Token{Type: token.LookupIdent(identifier), Literal: identifier, Cursor: token.LineBar{Line: uint(l.lineNum), Bar: uint(l.barNum)}}
 		} else if isDigit(l.ch) {
 			var num string = l.readNumber()
 			l.moveBack()
-			return token.Token{Type: token.INT, Literal: num}
+			return token.Token{Type: token.INT, Literal: num, Cursor: token.LineBar{Line: uint(l.lineNum), Bar: uint(l.barNum)}}
 		}
 	}
 
-	return newToken(token.ILLEGAL, l.ch)
+	return newToken(token.ILLEGAL, l.ch, l.lineNum, l.barNum)
 }
 
-func newToken(tokenType token.TokenType, ch byte) token.Token {
-	return token.Token{Type: tokenType, Literal: string(ch)}
+func newToken(tokenType token.TokenType, ch byte, lineNum int, barNum int) token.Token {
+	return token.Token{Type: tokenType, Literal: string(ch), Cursor: token.LineBar{Line: uint(lineNum), Bar: uint(barNum)}}
 }
