@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"log"
 	"monkey-i/ast"
 	"monkey-i/lexer"
 	"monkey-i/token"
@@ -21,6 +22,23 @@ func New(l *lexer.Lexer) Parser {
 
 func (p *Parser) nextToken() {
 	p.curToken, p.peekToken = p.peekToken, p.l.NextToken()
+}
+
+func (p *Parser) curTokenIs(t token.TokenType) bool {
+	return p.curToken.Type == t
+}
+
+func (p *Parser) peekTokenIs(t token.TokenType) bool {
+	return p.peekToken.Type == t
+}
+
+func (p *Parser) expectPeek(t token.TokenType) bool {
+	if p.peekTokenIs(t) {
+		p.nextToken()
+		return true
+	} else {
+		return false
+	}
 }
 
 func (p *Parser) ParseProgram() *ast.Program {
@@ -47,6 +65,25 @@ func (p *Parser) parseStatement() ast.Statement {
 	}
 }
 
-func (p *Parser) parseLetStatement() ast.Statement {
+func (p *Parser) parseLetStatement() *ast.LetStatement {
+
+	if !p.curTokenIs(token.LET) {
+		log.Panicf("Let statement starting token should be let, instead is %v", p.curToken)
+	}
+
+	stmt := &ast.LetStatement{Token: p.curToken}
+
+	if !p.expectPeek(token.IDENT) {
+		log.Printf("Let statement identifier expected")
+		return nil
+	}
+
+	stmt.Name = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+
+	if !p.expectPeek(token.ASSIGN) {
+		log.Printf("Let statement assignment expected")
+		return nil
+	}
+
 	return nil
 }
