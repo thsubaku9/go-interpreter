@@ -41,9 +41,13 @@ func (l *Lexer) moveBack() {
 		l.readPosition = 0
 		l.position = -1
 		l.barNum = 1
+		l.ch = 0
 	}
 
-	l.ch = l.input[l.readPosition]
+	if !l.isFin() {
+		l.ch = l.input[l.readPosition]
+	}
+
 }
 
 func (l *Lexer) peekChar() byte {
