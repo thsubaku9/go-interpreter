@@ -1,10 +1,12 @@
 package parser
 
 import (
+	"fmt"
 	"log"
 	"monkey-i/ast"
 	"monkey-i/lexer"
 	"monkey-i/token"
+	"strconv"
 )
 
 const (
@@ -29,9 +31,15 @@ type Parser struct {
 
 func New(l *lexer.Lexer) Parser {
 	p := Parser{l: l, errs: make([]error, 0), prefixParseFns: make(map[token.TokenType]prefixParseFn), infixParseFns: make(map[token.TokenType]infixParseFn)}
+	p.registerPrefix(token.IDENT, p.parseIdentifier)
+	p.registerPrefix(token.INT, p.parseIntegerLiteral)
 	p.nextToken()
 	p.nextToken()
 	return p
+}
+
+func (p *Parser) parseIdentifier() ast.Expression {
+	return &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 }
 
 func (p *Parser) nextToken() {
@@ -135,8 +143,20 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 	if prefix == nil {
 		return nil
 	}
-	leftExp := prefix()
-	return leftExp
+	return prefix()
+}
+
+func (p *Parser) parseIntegerLiteral() ast.Expression {
+	lit := &ast.IntegerLiteral{Token: p.curToken}
+
+	value, err := strconv.ParseInt(p.curToken.Literal, 0, 64)
+	if err != nil {
+		msg := fmt.Errorf("could not parse %q as integer", p.curToken.Literal)
+		p.errs = append(p.errs, msg)
+		return nil
+	}
+	lit.Value = value
+	return lit
 }
 
 // pratt parsing ideology
