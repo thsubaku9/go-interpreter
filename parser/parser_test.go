@@ -179,8 +179,7 @@ func TestParsingPrefixExpressions(t *testing.T) {
 		{"-15;", "-", 15},
 	}
 	for _, tt := range prefixTests {
-		l := lexer.New(tt.input)
-		p := New(l)
+		p := New(lexer.New(tt.input))
 		program := p.ParseProgram()
 		// checkParserErrors(t, p)
 		if len(program.Statements) != 1 {
