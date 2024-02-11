@@ -2,7 +2,6 @@ package parser
 
 import (
 	"fmt"
-	"log"
 	"monkey-i/ast"
 	"monkey-i/lexer"
 	"monkey-i/token"
@@ -36,6 +35,10 @@ func New(l *lexer.Lexer) Parser {
 	p.nextToken()
 	p.nextToken()
 	return p
+}
+
+func (p *Parser) Errors() []error {
+	return p.errs
 }
 
 func (p *Parser) parseIdentifier() ast.Expression {
@@ -93,19 +96,26 @@ func (p *Parser) parseStatement() ast.Statement {
 func (p *Parser) parseLetStatement() *ast.LetStatement {
 
 	if !p.curTokenIs(token.LET) {
-		log.Panicf("Let statement starting token should be let, instead is %v at %+v\n", p.curToken, p.curToken.Cursor)
+		msg := fmt.Errorf("let statement starting token should be let, instead is %v at %+v", p.curToken, p.curToken.Cursor)
+		p.errs = append(p.errs, msg)
+		return nil
+
 	}
 
 	stmt := &ast.LetStatement{Token: p.curToken}
 
 	if !p.expectPeek(token.IDENT) {
-		log.Panicf("Let statement identifier expected at %+v\n", p.curToken.Cursor)
+		msg := fmt.Errorf("let statement identifier expected at %+v", p.curToken.Cursor)
+		p.errs = append(p.errs, msg)
+		return nil
 	}
 
 	stmt.Name = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 
 	if !p.expectPeek(token.ASSIGN) {
-		log.Panicf("Let statement assignment expected at %+v\n", p.curToken.Cursor)
+		msg := fmt.Errorf("let statement assignment expected at %+v", p.curToken.Cursor)
+		p.errs = append(p.errs, msg)
+		return nil
 	}
 
 	// TODO: We're skipping the expressions until we encounter a semicolon
@@ -119,7 +129,7 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	stmt := &ast.ReturnStatement{Token: p.curToken}
 
 	p.nextToken()
-	// TODO: We're skipping the expressions until we // encounter a semicolon
+	// TODO: We're skipping the expressions until we encounter a semicolon
 	for !p.curTokenIs(token.SEMICOLON) {
 		p.nextToken()
 	}
@@ -141,6 +151,7 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 func (p *Parser) parseExpression(precedence int) ast.Expression {
 	prefix := p.prefixParseFns[p.curToken.Type]
 	if prefix == nil {
+		p.noPrefixParseFnError(p.curToken.Type)
 		return nil
 	}
 	return prefix()
@@ -157,6 +168,11 @@ func (p *Parser) parseIntegerLiteral() ast.Expression {
 	}
 	lit.Value = value
 	return lit
+}
+
+func (p *Parser) noPrefixParseFnError(t token.TokenType) {
+	msg := fmt.Errorf("no prefix parse function for %s found", t)
+	p.errs = append(p.errs, msg)
 }
 
 // pratt parsing ideology

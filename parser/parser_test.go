@@ -7,6 +7,18 @@ import (
 	"testing"
 )
 
+func checkParserErrors(t *testing.T, p Parser) {
+	errors := p.Errors()
+	if len(errors) == 0 {
+		return
+	}
+	t.Errorf("parser has %d errors", len(errors))
+	for _, msg := range errors {
+		t.Errorf("parser error: %q", msg)
+	}
+	t.FailNow()
+}
+
 func TestLetStatements(t *testing.T) {
 	input := `
 	let x = 5;
@@ -141,7 +153,7 @@ func TestIntegerLiteralExpression(t *testing.T) {
 	l := lexer.New(input)
 	p := New(l)
 	program := p.ParseProgram()
-	// checkParserErrors(t, p)
+	checkParserErrors(t, p)
 
 	if len(program.Statements) != 1 {
 		t.Fatalf("program has not enough statements. got=%d",
@@ -181,7 +193,7 @@ func TestParsingPrefixExpressions(t *testing.T) {
 	for _, tt := range prefixTests {
 		p := New(lexer.New(tt.input))
 		program := p.ParseProgram()
-		// checkParserErrors(t, p)
+		checkParserErrors(t, p)
 		if len(program.Statements) != 1 {
 			t.Fatalf("program.Statements does not contain %d statements. got=%d\n",
 				1, len(program.Statements))
