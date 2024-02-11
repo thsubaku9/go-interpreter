@@ -194,7 +194,8 @@ func TestParsingPrefixExpressions(t *testing.T) {
 		p := New(lexer.New(tt.input))
 		program := p.ParseProgram()
 		checkParserErrors(t, p)
-		if len(program.Statements) != 1 {
+
+		if len(program.Statements) != 1 { // should be 1 // weird golang bug ???
 			t.Fatalf("program.Statements does not contain %d statements. got=%d\n",
 				1, len(program.Statements))
 		}
@@ -226,13 +227,60 @@ func testIntegerLiteral(t *testing.T, il ast.Expression, value int64) bool {
 		return false
 	}
 	if integ.Value != value {
-		t.Errorf("integ.Value not %d. got=%d", value, integ.Value)
+		t.Errorf("integer.Value not %d. got=%d", value, integ.Value)
 		return false
 	}
 	if integ.TokenLiteral() != fmt.Sprintf("%d", value) {
-		t.Errorf("integ.TokenLiteral not %d. got=%s", value,
+		t.Errorf("integer.TokenLiteral not %d. got=%s", value,
 			integ.TokenLiteral())
 		return false
 	}
 	return true
+}
+
+func TestParsingInfixExpressions(t *testing.T) {
+	infixTests := []struct {
+		input      string
+		leftValue  int64
+		operator   string
+		rightValue int64
+	}{
+		{"5 + 5;", 5, "+", 5},
+		{"5 - 5;", 5, "-", 5},
+		{"5 * 5;", 5, "*", 5},
+		{"5 / 5;", 5, "/", 5},
+		{"5 > 5;", 5, ">", 5},
+		{"5 < 5;", 5, "<", 5},
+		{"5 == 5;", 5, "==", 5},
+		{"5 != 5;", 5, "!=", 5},
+	}
+	for _, tt := range infixTests {
+		l := lexer.New(tt.input)
+		p := New(l)
+		program := p.ParseProgram()
+		checkParserErrors(t, p)
+		if len(program.Statements) != 1 {
+			t.Fatalf("program.Statements does not contain %d statements. got=%d\n",
+				1, len(program.Statements))
+		}
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		if !ok {
+			t.Fatalf("program.Statements[0] is not ast.ExpressionStatement. got=%T",
+				program.Statements[0])
+		}
+		exp, ok := stmt.Expression.(*ast.InfixExpression)
+		if !ok {
+			t.Fatalf("exp is not ast.InfixExpression. got=%T", stmt.Expression)
+		}
+		if !testIntegerLiteral(t, exp.Left, tt.leftValue) {
+			return
+		}
+		if exp.Operator != tt.operator {
+			t.Fatalf("exp.Operator is not '%s'. got=%s",
+				tt.operator, exp.Operator)
+		}
+		if !testIntegerLiteral(t, exp.Right, tt.rightValue) {
+			return
+		}
+	}
 }
