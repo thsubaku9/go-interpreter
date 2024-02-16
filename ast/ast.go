@@ -132,7 +132,7 @@ type InfixExpression struct {
 func (ie *InfixExpression) expressionNode()      {}
 func (ie *InfixExpression) TokenLiteral() string { return ie.Token.Literal }
 func (ie *InfixExpression) String() string {
-	return fmt.Sprintf("(", ie.Left.String(), " ", ie.Operator, " ", ie.Right.String(), ")")
+	return fmt.Sprint("(", ie.Left.String(), " ", ie.Operator, " ", ie.Right.String(), ")")
 }
 
 type Boolean struct {
