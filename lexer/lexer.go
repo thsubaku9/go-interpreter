@@ -14,7 +14,7 @@ type Lexer struct {
 }
 
 func New(input string) *Lexer {
-	l := &Lexer{input: input, lineNum: 1, barNum: 1}
+	l := &Lexer{input: input, lineNum: 1, barNum: 0}
 	l.readChar()
 	return l
 }
@@ -40,7 +40,7 @@ func (l *Lexer) moveBack() {
 	if l.readPosition <= 0 {
 		l.readPosition = 0
 		l.position = -1
-		l.barNum = 1
+		l.barNum = 0
 		l.ch = 0
 	}
 
@@ -62,7 +62,7 @@ func (l *Lexer) skipWhitespace() {
 	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
 		if l.ch == '\n' {
 			l.lineNum += 1
-			l.barNum = 1
+			l.barNum = 0
 		}
 
 		l.readChar()

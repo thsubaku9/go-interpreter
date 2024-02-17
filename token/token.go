@@ -1,5 +1,7 @@
 package token
 
+import "fmt"
+
 type TokenType string
 
 type Token struct {
@@ -11,6 +13,10 @@ type Token struct {
 type LineBar struct {
 	Line uint
 	Bar  uint
+}
+
+func (l LineBar) String() string {
+	return fmt.Sprintf("%d:%d", l.Line, l.Bar)
 }
 
 const (
