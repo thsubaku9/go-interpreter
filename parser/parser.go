@@ -98,7 +98,7 @@ func (p *Parser) expectPeek(t token.TokenType) bool {
 
 func (p *Parser) peekError(t token.TokenType) {
 	msg := fmt.Errorf("expected next token to be %s, got %s instead at %s",
-		t, p.peekToken.Type, p.peekToken.Cursor.String())
+		t, p.peekToken.Type, p.curToken.Cursor.String())
 	p.errs = append(p.errs, msg)
 }
 
