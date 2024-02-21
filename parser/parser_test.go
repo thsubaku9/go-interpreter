@@ -249,6 +249,8 @@ func TestParsingInfixExpressions(t *testing.T) {
 		{"true == true", true, "==", true},
 		{"true != false", true, "!=", false},
 		{"false == false", false, "==", false},
+		{"7 >= 3", 7, ">=", 3},
+		{"66 <= 140", 66, "<=", 140},
 	}
 	for _, tt := range infixTests {
 		l := lexer.New(tt.input)
