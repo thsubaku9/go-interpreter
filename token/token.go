@@ -20,6 +20,7 @@ func (l LineBar) String() string {
 }
 
 const (
+	// todo -> add support for and/or
 	ILLEGAL = "ILLEGAL"
 	EOF     = "EOF"
 	// Identifiers + literals + constants

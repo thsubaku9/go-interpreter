@@ -317,10 +317,18 @@ func (p *Parser) parseIfExpression() ast.Expression {
 
 	if p.peekTokenIs(token.ELSE) {
 		p.nextToken()
-		if !p.expectPeek(token.LBRACE) {
-			return nil
+
+		if p.peekTokenIs(token.IF) {
+			// todo -> close this
+			// p.nextToken()
+			// nestedIfExpr := p.parseIfExpression().(*ast.IfExpression)
+			// expression.Alternative = &ast.BlockStatement{Token: p.curToken, Statements: []ast.Statement{}}
+		} else {
+			if !p.expectPeek(token.LBRACE) {
+				return nil
+			}
+			expression.Alternative = p.parseBlockStatement()
 		}
-		expression.Alternative = p.parseBlockStatement()
 	}
 
 	return expression
