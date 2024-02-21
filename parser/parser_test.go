@@ -486,7 +486,14 @@ func TestIfElseExpression(t *testing.T) {
 			t.Errorf("exp.Alternative.Statements was not 1. got=%+v", exp.Alternative)
 		}
 
-		//todo -> close this test
+		alternative, ok := exp.Alternative.Statements[0].(*ast.ExpressionStatement)
+		if !ok {
+			t.Fatalf("Statements[0] is not ast.ExpressionStatement. got=%T",
+				exp.Consequence.Statements[0])
+		}
+		if !testIdentifier(t, alternative.Expression, "y") {
+			return
+		}
 	}
 
 }
