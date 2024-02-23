@@ -18,7 +18,7 @@ func main() {
 
 	fmt.Printf("Feel free to type in commands\n")
 
-	repl.StartParser(os.Stdin, os.Stdout)
+	repl.StartEvaluator(os.Stdin, os.Stdout)
 }
 
 // type Reference struct {

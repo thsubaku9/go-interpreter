@@ -61,6 +61,8 @@ func (p *Parser) bootstrapInfixPratt() {
 	p.registerInfix(token.NOT_EQ, p.parseInfixExpression)
 	p.registerInfix(token.LT, p.parseInfixExpression)
 	p.registerInfix(token.GT, p.parseInfixExpression)
+	p.registerInfix(token.LTE, p.parseInfixExpression)
+	p.registerInfix(token.GTE, p.parseInfixExpression)
 	p.registerInfix(token.LPAREN, p.parseCallExpression)
 }
 
@@ -258,6 +260,8 @@ var precedences = map[token.TokenType]int{token.EQ: EQUALS,
 	token.NOT_EQ:   EQUALS,
 	token.LT:       LESSGREATER,
 	token.GT:       LESSGREATER,
+	token.LTE:      LESSGREATER,
+	token.GTE:      LESSGREATER,
 	token.PLUS:     SUM,
 	token.MINUS:    SUM,
 	token.SLASH:    PRODUCT,
@@ -313,10 +317,18 @@ func (p *Parser) parseIfExpression() ast.Expression {
 
 	if p.peekTokenIs(token.ELSE) {
 		p.nextToken()
-		if !p.expectPeek(token.LBRACE) {
-			return nil
+
+		if p.peekTokenIs(token.IF) {
+			p.nextToken()
+			nestedIfExpr := p.parseIfExpression()
+			stmt := &ast.ExpressionStatement{Token: p.curToken, Expression: nestedIfExpr}
+			expression.Alternative = &ast.BlockStatement{Token: p.curToken, Statements: []ast.Statement{stmt}}
+		} else {
+			if !p.expectPeek(token.LBRACE) {
+				return nil
+			}
+			expression.Alternative = p.parseBlockStatement()
 		}
-		expression.Alternative = p.parseBlockStatement()
 	}
 
 	return expression
