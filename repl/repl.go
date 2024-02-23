@@ -6,6 +6,7 @@ import (
 	"io"
 	"monkey-i/evaluator"
 	"monkey-i/lexer"
+	"monkey-i/object"
 	"monkey-i/parser"
 	"monkey-i/token"
 )
@@ -70,6 +71,7 @@ func printParserErrors(out io.Writer, errors []error) {
 func StartEvaluator(in io.Reader, out io.Writer) {
 
 	scanner := bufio.NewScanner(in)
+	env := object.NewEnvironment()
 
 	for {
 		fmt.Fprintf(out, PROMPT)
@@ -80,7 +82,7 @@ func StartEvaluator(in io.Reader, out io.Writer) {
 		l := lexer.New(scanner.Text())
 		p := parser.New(l)
 		program := p.ParseProgram()
-		evaluated := evaluator.Eval(program)
+		evaluated := evaluator.Eval(program, env)
 		if evaluated != nil {
 			io.WriteString(out, evaluated.Inspect())
 			io.WriteString(out, "\n")
