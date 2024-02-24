@@ -260,18 +260,12 @@ func (al *ArrayLiteral) String() string {
 
 type IndexExpression struct {
 	Token token.Token // The [ token
-	Left  Expression
-	Index Expression
+	Left  Expression  // This expression will ultimately yield an ArrayLiteral
+	Index Expression  // This expression should ultimately evalute to an Integer
 }
 
 func (ie *IndexExpression) expressionNode()      {}
 func (ie *IndexExpression) TokenLiteral() string { return ie.Token.Literal }
 func (ie *IndexExpression) String() string {
-	var out bytes.Buffer
-	out.WriteString("(")
-	out.WriteString(ie.Left.String())
-	out.WriteString("[")
-	out.WriteString(ie.Index.String())
-	out.WriteString("])")
-	return out.String()
+	return fmt.Sprintf("(%s[%s])", ie.Left.String(), ie.Index.String())
 }
