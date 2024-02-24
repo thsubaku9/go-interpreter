@@ -93,6 +93,17 @@ func (l *Lexer) readNumber() string {
 	return l.input[position:l.position]
 }
 
+func (l *Lexer) readString() string {
+	position := l.position + 1
+	for {
+		l.readChar()
+		if l.ch == '"' || l.ch == 0 {
+			break
+		}
+	}
+	return l.input[position:l.position]
+}
+
 func (l *Lexer) NextToken() token.Token {
 	defer l.readChar()
 	l.skipWhitespace()
@@ -157,7 +168,9 @@ func (l *Lexer) NextToken() token.Token {
 	case '}':
 		return newToken(token.RBRACE, l.ch, l.lineNum, l.barNum)
 	case 0:
-		return token.Token{Type: token.EOF, Literal: ""}
+		return newToken(token.EOF, "", l.lineNum, l.barNum)
+	case '"':
+		return newToken(token.STRING, l.readString(), l.lineNum, l.barNum)
 	default:
 		if isLetter(l.ch) {
 			var identifier string = l.readIdentifier()
@@ -173,6 +186,14 @@ func (l *Lexer) NextToken() token.Token {
 	return newToken(token.ILLEGAL, l.ch, l.lineNum, l.barNum)
 }
 
-func newToken(tokenType token.TokenType, ch byte, lineNum int, barNum int) token.Token {
-	return token.Token{Type: tokenType, Literal: string(ch), Cursor: token.LineBar{Line: uint(lineNum), Bar: uint(barNum)}}
+func newToken(tokenType token.TokenType, ch interface{}, lineNum int, barNum int) token.Token {
+
+	switch literal := ch.(type) {
+	case byte:
+		return token.Token{Type: tokenType, Literal: string(literal), Cursor: token.LineBar{Line: uint(lineNum), Bar: uint(barNum)}}
+	case string:
+		return token.Token{Type: tokenType, Literal: literal, Cursor: token.LineBar{Line: uint(lineNum), Bar: uint(barNum)}}
+	default:
+		panic("newToken got unsupported ch input")
+	}
 }
