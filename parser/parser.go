@@ -50,6 +50,7 @@ func (p *Parser) bootstrapPrefixPratt() {
 	p.registerPrefix(token.LPAREN, p.parseGroupedExpression)
 	p.registerPrefix(token.IF, p.parseIfExpression)
 	p.registerPrefix(token.FUNCTION, p.parseFunctionBlock)
+	p.registerPrefix(token.STRING, p.parseStringLiteral)
 }
 
 func (p *Parser) bootstrapInfixPratt() {
@@ -412,4 +413,8 @@ func (p *Parser) parseCallArguments() []ast.Expression {
 		return nil
 	}
 	return args
+}
+
+func (p *Parser) parseStringLiteral() ast.Expression {
+	return &ast.StringLiteral{Token: p.curToken, Value: p.curToken.Literal}
 }
