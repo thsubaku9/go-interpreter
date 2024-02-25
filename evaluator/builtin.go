@@ -3,6 +3,7 @@ package evaluator
 import (
 	"fmt"
 	"monkey-i/object"
+	"os"
 )
 
 var builtins = map[string]*object.Builtin{
@@ -25,6 +26,11 @@ var builtins = map[string]*object.Builtin{
 			for _, arg := range args {
 				fmt.Println(arg.Inspect())
 			}
+			return NULL
+		}},
+	"exit": &object.Builtin{
+		Fn: func(args ...object.Object) object.Object {
+			os.Exit(0)
 			return NULL
 		}},
 }
