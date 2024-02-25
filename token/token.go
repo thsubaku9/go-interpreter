@@ -45,6 +45,7 @@ const (
 	GTE    = ">="
 	// Delimiters
 	COMMA     = ","
+	COLON     = ":"
 	SEMICOLON = ";"
 	LPAREN    = "("
 	RPAREN    = ")"
