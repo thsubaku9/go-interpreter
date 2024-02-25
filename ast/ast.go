@@ -238,3 +238,53 @@ func (ce *CallExpression) String() string {
 	out.WriteString(")")
 	return out.String()
 }
+
+type ArrayLiteral struct {
+	Token    token.Token // the '[' token
+	Elements []Expression
+}
+
+func (al *ArrayLiteral) expressionNode()      {}
+func (al *ArrayLiteral) TokenLiteral() string { return al.Token.Literal }
+func (al *ArrayLiteral) String() string {
+	var out bytes.Buffer
+	elements := []string{}
+	for _, el := range al.Elements {
+		elements = append(elements, el.String())
+	}
+	out.WriteString("[")
+	out.WriteString(strings.Join(elements, ", "))
+	out.WriteString("]")
+	return out.String()
+}
+
+type IndexExpression struct {
+	Token token.Token // The [ token
+	Left  Expression  // This expression will ultimately yield a ArrayLiteral/HashLiteral
+	Index Expression  // This expression should ultimately evalute to a Integer/Hashable
+}
+
+func (ie *IndexExpression) expressionNode()      {}
+func (ie *IndexExpression) TokenLiteral() string { return ie.Token.Literal }
+func (ie *IndexExpression) String() string {
+	return fmt.Sprintf("(%s[%s])", ie.Left.String(), ie.Index.String())
+}
+
+type HashLiteral struct {
+	Token token.Token // the '{' token
+	Pairs map[Expression]Expression
+}
+
+func (hl *HashLiteral) expressionNode()      {}
+func (hl *HashLiteral) TokenLiteral() string { return hl.Token.Literal }
+func (hl *HashLiteral) String() string {
+	var out bytes.Buffer
+	pairs := []string{}
+	for key, value := range hl.Pairs {
+		pairs = append(pairs, key.String()+":"+value.String())
+	}
+	out.WriteString("{")
+	out.WriteString(strings.Join(pairs, ", "))
+	out.WriteString("}")
+	return out.String()
+}

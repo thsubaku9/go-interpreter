@@ -167,10 +167,16 @@ func (l *Lexer) NextToken() token.Token {
 		return newToken(token.LBRACE, l.ch, l.lineNum, l.barNum)
 	case '}':
 		return newToken(token.RBRACE, l.ch, l.lineNum, l.barNum)
+	case '[':
+		return newToken(token.LBRACKET, l.ch, l.lineNum, l.barNum)
+	case ']':
+		return newToken(token.RBRACKET, l.ch, l.lineNum, l.barNum)
 	case 0:
 		return newToken(token.EOF, "", l.lineNum, l.barNum)
 	case '"':
 		return newToken(token.STRING, l.readString(), l.lineNum, l.barNum)
+	case ':':
+		return newToken(token.COLON, l.ch, l.lineNum, l.barNum)
 	default:
 		if isLetter(l.ch) {
 			var identifier string = l.readIdentifier()

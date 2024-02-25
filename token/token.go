@@ -45,11 +45,14 @@ const (
 	GTE    = ">="
 	// Delimiters
 	COMMA     = ","
+	COLON     = ":"
 	SEMICOLON = ";"
 	LPAREN    = "("
 	RPAREN    = ")"
 	LBRACE    = "{"
 	RBRACE    = "}"
+	LBRACKET  = "["
+	RBRACKET  = "]"
 	// Keywords
 	FUNCTION = "FUNCTION"
 	LET      = "LET"
