@@ -79,7 +79,26 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 		return applyFunction(function, args)
 
+	case *ast.ArrayLiteral:
+		elements := getArgumentsFromExpressions(node.Elements, env)
+		if len(elements) == 1 && isError(elements[0]) {
+			return elements[0]
+		}
+		return &object.Array{Elements: elements}
+
+	case *ast.IndexExpression:
+		left := Eval(node.Left, env)
+		if isError(left) {
+			return left
+		}
+		index := Eval(node.Index, env)
+		if isError(index) {
+			return index
+		}
+		return evalIndexExpression(left, index)
+
 	}
+
 	return nil
 }
 
@@ -205,6 +224,7 @@ func evalStringInfixExpression(operator string, left, right object.Object) objec
 	rightVal := right.(*object.String).Value
 	return &object.String{Value: leftVal + rightVal}
 }
+
 func evalIfExpression(elem *ast.IfExpression, env *object.Environment) object.Object {
 	condition := Eval(elem.Condition, env)
 
@@ -253,7 +273,6 @@ func evalIdentifier(node *ast.Identifier, env *object.Environment) object.Object
 }
 
 func getArgumentsFromExpressions(exps []ast.Expression, env *object.Environment) []object.Object {
-
 	var result []object.Object
 
 	for _, e := range exps {
@@ -294,4 +313,32 @@ func unwrapReturnValue(obj object.Object) object.Object {
 		return returnValue.Value
 	}
 	return obj
+}
+
+func evalIndexExpression(left, index object.Object) object.Object {
+	switch {
+	case left.Type() == object.ARRAY_OBJ && index.Type() == object.INTEGER_OBJ:
+		return evalArrayIndexExpression(left.(*object.Array), index.(*object.Integer))
+	default:
+		return newError("index operator not supported: %s", left.Type())
+	}
+}
+
+func evalArrayIndexExpression(array *object.Array, index *object.Integer) object.Object {
+	_index := index.Value
+	max := int64(len(array.Elements) - 1)
+
+	if _index > max {
+		return newError("index out of range")
+	}
+	if _index < 0 {
+		_wrappedIndex := max + _index + 1
+		if _wrappedIndex < 0 {
+			return newError("index out of range")
+		}
+		return array.Elements[_wrappedIndex]
+	}
+
+	return array.Elements[_index]
+
 }
