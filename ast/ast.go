@@ -260,8 +260,8 @@ func (al *ArrayLiteral) String() string {
 
 type IndexExpression struct {
 	Token token.Token // The [ token
-	Left  Expression  // This expression will ultimately yield an ArrayLiteral
-	Index Expression  // This expression should ultimately evalute to an Integer
+	Left  Expression  // This expression will ultimately yield a ArrayLiteral/HashLiteral
+	Index Expression  // This expression should ultimately evalute to a Integer/Hashable
 }
 
 func (ie *IndexExpression) expressionNode()      {}
